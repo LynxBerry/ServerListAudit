@@ -38,6 +38,9 @@ public class TestMain {
 
         System.out.println("xxxx===");
         System.out.println(sqlEngine.getRecord("xxxx"));
+        ArrayList<Property> props = new ArrayList<>();
+        props.add(new Property<>("RecordID","xxxx"));
+        System.out.println(sqlEngine.queryRecordbyKeys(props));
         //System.out.println("yyy" + (new Date()).getClass().getCanonicalName());
         //System.out.println(("abc").getClass().getName());
 

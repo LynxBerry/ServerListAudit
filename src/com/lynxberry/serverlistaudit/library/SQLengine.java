@@ -6,6 +6,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -57,10 +58,10 @@ public class SQLengine {
         ResultSet resultSet = preparedStatement.executeQuery();
         resultSet.first();
 
-        //statement.executeUpdate("insert into serverlist values(\"xxxxqqqq\",\"dm2mpbiutloct034\",\"BST\",\"FEpatching\",\"CP-1\")");
+        //statement.executeUpdate("insert into serverlist ('col1','col2') values(\"xxxxqqqq\",\"dm2mpbiutloct034\",\"BST\",\"FEpatching\",\"CP-1\")");
 
 
-        Record record = getRecord(resultSet);
+        Record record = loadRecordFromRS(resultSet);
 
         connect.close();
 
@@ -69,7 +70,17 @@ public class SQLengine {
 
     }
 
-    public void insertRecord(Record record){
+    public void insertRecord(Record record) throws Exception {
+        Connection connect = connect();
+        String sqlQuery = "Start Transaction;"
+                        + "select * from where keys are values for update;"
+                        + "insert statement;"
+                        + "commit;";
+                
+        PreparedStatement ps = connect.prepareStatement(sqlQuery);
+        ps.executeUpdate();
+
+        connect.close();
 
     }
 
@@ -91,15 +102,17 @@ public class SQLengine {
     public ArrayList<Record> queryRecordbyKeys (ArrayList<Property> properties) throws Exception {
         Connection connect = connect();
         ArrayList<Record> records = new ArrayList<>();
+        List<String> conditions = properties.stream().map(p->p.getPropertyName() + " like " + "'%" + p.getPropertyValue().toString() + "%'").collect(Collectors.toList());
+        conditions.add("IsValid = 'y'");//only fetch valid record;
         String sqlQuery =  "select *"
                           + String.format("from %s where ",tableName)
-                          + String.join(" and ", properties.stream().map(p->p.getPropertyName() + " like " + "'%" + p.getPropertyValue().toString() + "%'").collect(Collectors.toList()))
+                          + String.join(" and ", conditions)
                           + ";";
 
         PreparedStatement ps = connect.prepareStatement(sqlQuery);
         ResultSet rs = ps.executeQuery();
         while(rs.next()){
-            Record record = getRecord(rs);
+            Record record = loadRecordFromRS(rs);
             records.add(record);
 
 
@@ -109,7 +122,7 @@ public class SQLengine {
         return records;
     }
 
-    private Record getRecord(ResultSet rs) throws Exception {
+    private Record loadRecordFromRS(ResultSet rs) throws Exception {
         ArrayList<Property> filledProperties = new ArrayList<>();
 
         for (SchemaItem sc:Record.getCommonSchema().getListSchema()
