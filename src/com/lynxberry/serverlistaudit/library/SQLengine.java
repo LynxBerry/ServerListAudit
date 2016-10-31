@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.stream.Collectors;
 
 /**
  * Created by stevenshao on 26/10/2016.
@@ -14,12 +17,14 @@ public class SQLengine {
     Schema schema;
     String username;
     String password;
+    String tableName;
 
     public void setConfig(Schema schema){
         //for now hard coded
         sqlServerName = "localhost";
         portNumber = 123;
         this.schema = schema;
+        tableName = "serverlist";
     }
     private Connection connect() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.jdbc.Driver");
@@ -84,7 +89,34 @@ public class SQLengine {
 
     }
 
-    public ArrayList<Record> queryRecordbyKeys(ArrayList<Property> properties){
-        return null;
+    public ArrayList<Record> queryRecordbyKeys (ArrayList<Property> properties) throws Exception {
+        Connection connect = connect();
+        ArrayList<Record> records = new ArrayList<>();
+        String sqlQuery =  "select *"
+                          + String.format("from %s where ",tableName)
+                          + String.join(" and ", properties.stream().map(p->p.getPropertyName() + " like " + "'%" + p.getPropertyValue().toString() + "%'").collect(Collectors.toList()))
+                          + ";";
+
+        PreparedStatement ps = connect.prepareStatement(sqlQuery);
+        ResultSet rs = ps.executeQuery();
+        while(rs.next()){
+            ArrayList<Property> filledProperties = new ArrayList<>();
+
+            for (SchemaItem sc:Record.getCommonSchema().getListSchema()
+                    ) {
+                filledProperties.add(new Property<>(sc.getKeyName(), rs.getString(sc.getKeyName()) ));
+            }
+
+            for (SchemaItem sc:schema.getListSchema()
+                 ) {
+                filledProperties.add(new Property<>(sc.getKeyName(), rs.getString(sc.getKeyName()) ));
+            }
+
+            records.add(RecordBuilderFactory.createRecorderBuilder("").readRecord().setSchema(schema).setProperties(filledProperties).build());
+
+
+        }
+
+        return records;
     }
 }

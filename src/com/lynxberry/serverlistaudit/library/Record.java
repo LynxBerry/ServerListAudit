@@ -36,6 +36,10 @@ public abstract class Record  {
             //add later
     );
 
+    static public Schema getCommonSchema(){
+        return commonSchema;
+    }
+
     private boolean isInited = false;
 
     public abstract Object getPropertyByName(String propertyName);
