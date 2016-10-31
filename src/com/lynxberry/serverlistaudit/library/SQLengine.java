@@ -26,6 +26,20 @@ public class SQLengine {
         this.schema = schema;
         tableName = "serverlist";
     }
+
+    public ArrayList<String> getColumns() throws Exception{
+        Connection connect = connect();
+        DatabaseMetaData metaData = connect.getMetaData();
+        ResultSet setCols = metaData.getColumns(null,null,"serverlist","");
+
+        ArrayList<String> cols = new ArrayList<>();
+        while(setCols.next()){
+            cols.add(setCols.getString("COLUMN_NAME"));
+        }
+        connect.close();
+        return cols;
+
+    }
     private Connection connect() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.jdbc.Driver");
         Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/AssetDB?user=root&password=mail0806");
@@ -36,36 +50,21 @@ public class SQLengine {
 
     public Record getRecord(String recordID) throws Exception {
         Connection connect = connect();
-        DatabaseMetaData metaData = connect().getMetaData();
-        ResultSet setCols = metaData.getColumns(null,null,"serverlist","");
-        ArrayList<String> cols = new ArrayList<>();
-        while(setCols.next()){
-            cols.add(setCols.getString("COLUMN_NAME"));
-        }
 
         PreparedStatement preparedStatement = connect.prepareStatement("select * from serverlist where RecordID = ?;");
         preparedStatement.setString(1,recordID);
 
-        ResultSet resultSet = null;
-
-        resultSet = preparedStatement.executeQuery();
+        ResultSet resultSet = preparedStatement.executeQuery();
         resultSet.first();
 
         //statement.executeUpdate("insert into serverlist values(\"xxxxqqqq\",\"dm2mpbiutloct034\",\"BST\",\"FEpatching\",\"CP-1\")");
 
 
-        ArrayList<Property> p = new ArrayList<>();
-
-        //ResultSet finalResultSet = resultSet;
-        for (String col :
-                cols) {
-            p.add(new Property<>(col, resultSet.getObject(col)));
-        }
-
+        Record record = getRecord(resultSet);
 
         connect.close();
 
-        return RecordBuilderFactory.createRecorderBuilder("").readRecord().setSchema(schema).setProperties(p).build();
+        return record;
 
 
     }
@@ -100,23 +99,29 @@ public class SQLengine {
         PreparedStatement ps = connect.prepareStatement(sqlQuery);
         ResultSet rs = ps.executeQuery();
         while(rs.next()){
-            ArrayList<Property> filledProperties = new ArrayList<>();
-
-            for (SchemaItem sc:Record.getCommonSchema().getListSchema()
-                    ) {
-                filledProperties.add(new Property<>(sc.getKeyName(), rs.getString(sc.getKeyName()) ));
-            }
-
-            for (SchemaItem sc:schema.getListSchema()
-                 ) {
-                filledProperties.add(new Property<>(sc.getKeyName(), rs.getString(sc.getKeyName()) ));
-            }
-
-            records.add(RecordBuilderFactory.createRecorderBuilder("").readRecord().setSchema(schema).setProperties(filledProperties).build());
+            Record record = getRecord(rs);
+            records.add(record);
 
 
         }
+        connect.close();
 
         return records;
+    }
+
+    private Record getRecord(ResultSet rs) throws Exception {
+        ArrayList<Property> filledProperties = new ArrayList<>();
+
+        for (SchemaItem sc:Record.getCommonSchema().getListSchema()
+                ) {
+            filledProperties.add(new Property<>(sc.getKeyName(), rs.getString(sc.getKeyName()) ));
+        }
+
+        for (SchemaItem sc:schema.getListSchema()
+             ) {
+            filledProperties.add(new Property<>(sc.getKeyName(), rs.getString(sc.getKeyName()) ));
+        }
+
+        return RecordBuilderFactory.createRecorderBuilder("").readRecord().setSchema(schema).setProperties(filledProperties).build();
     }
 }
