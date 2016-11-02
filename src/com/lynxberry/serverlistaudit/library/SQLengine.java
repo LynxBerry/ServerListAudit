@@ -8,22 +8,28 @@ import java.util.stream.Collectors;
  * Created by stevenshao on 26/10/2016.
  */
 public class SQLengine {
-    String sqlServerName;
-    Integer portNumber;
-    Schema schema;
+    private String sqlServerName;
+    private Schema schema;
     String username;
     String password;
     String tableName;
+    String dbName;
 
-    public void setConfig(Schema schema){
+    public void setConfig(Schema schema, String sqlServerName, String dbName, String tableName){
         //for now hard coded
-        sqlServerName = "localhost";
-        portNumber = 123;
+        this.sqlServerName = sqlServerName;
         this.schema = schema;
-        tableName = "serverlist";
+        this.dbName = dbName;
+        this.tableName = tableName;
     }
 
-    public ArrayList<String> getColumns() throws Exception{
+    public void setUsernamePwd(String username, String password){
+        this.username = username;
+        this.password = password;
+    }
+
+    //Not used right now.
+    public ArrayList<String> getDBColumns() throws Exception{
         Connection connect = connect();
         DatabaseMetaData metaData = connect.getMetaData();
         ResultSet setCols = metaData.getColumns(null,null,"serverlist","");
@@ -38,8 +44,7 @@ public class SQLengine {
     }
     private Connection connect() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.jdbc.Driver");
-        Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/testdb?user=root&password=mail0806");
-        return connect;
+        return DriverManager.getConnection("jdbc:mysql://" + sqlServerName + "/" + dbName + "?user=" + username + "&password=" + password);
 
 
     }
@@ -75,7 +80,7 @@ public class SQLengine {
         conditions = schema.getListSchema().stream().filter(SchemaItem::isKey).map(sc->sc.getKeyName()+"="+"'"+ record.getInnerPropertyByName(sc.getKeyName())+"'").collect(Collectors.toList());
         columns = Record.getCommonSchema().getListSchema().stream().map(sc->sc.getKeyName()).collect(Collectors.toList());
         columns.addAll(schema.getListSchema().stream().map(sc->sc.getKeyName()).collect(Collectors.toList()));
-        values = columns.stream().map(col->"'" + (String) record.getInnerPropertyByName(col) + "'").collect(Collectors.toList());
+        values = columns.stream().map(col->"'" +  record.getPropertyByName(col).toString() + "'").collect(Collectors.toList());
         String sqlQuery = "select count(*) from " + tableName + " "
                 + "where " + String.join(" and ",conditions) + " for update;";
 
@@ -84,9 +89,9 @@ public class SQLengine {
 
         System.out.println(sqlQuery);
         System.out.println(sqlInsert);
-        /*
+
         PreparedStatement ps = connect.prepareStatement(sqlQuery);
-        //ResultSet rs = ps.executeQuery();
+        ResultSet rs = ps.executeQuery();
         int count = 1;
         while (rs.next()) {
             count = rs.getInt(1);
@@ -94,10 +99,10 @@ public class SQLengine {
 
         if (count == 0) {
             PreparedStatement insertPS = connect.prepareStatement(sqlInsert);
-            //insertPS.executeUpdate();
+            insertPS.executeUpdate();
 
         }
-*/
+
         connect.commit();
         connect.close();
 

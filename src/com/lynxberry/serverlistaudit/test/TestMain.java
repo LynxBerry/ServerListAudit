@@ -34,7 +34,8 @@ public class TestMain {
         System.out.println(record2);
 
         SQLengine sqlEngine = new SQLengine();
-        sqlEngine.setConfig(new Schema());
+        sqlEngine.setConfig(new Schema(),"localhost","AssetDB","serverlist");
+        sqlEngine.setUsernamePwd("steven","zima#9996zima#hong");
 
         System.out.println("xxxx===");
         //System.out.println(sqlEngine.getRecord("xxxx"));

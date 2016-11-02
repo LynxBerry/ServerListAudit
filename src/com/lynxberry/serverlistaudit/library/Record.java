@@ -42,9 +42,17 @@ public abstract class Record  {
 
     private boolean isInited = false;
 
-    public abstract Object getInnerPropertyByName(String propertyName);
+    abstract Object getInnerPropertyByName(String propertyName);
 
-    public Object getPropertyByName(String propertyName)
+    public Object getPropertyByName(String propertyName){
+
+        if(commonProperties.containsKey(propertyName)){
+            return commonProperties.get(propertyName);
+        }
+
+        return getInnerPropertyByName(propertyName);
+
+    }
 
     public final String getRecordID() {
         return (String) commonProperties.get("RecordID");

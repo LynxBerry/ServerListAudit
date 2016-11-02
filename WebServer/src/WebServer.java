@@ -4,6 +4,8 @@
 import static spark.Spark.*;
 import com.lynxberry.serverlistaudit.library.*;
 
+import java.util.ArrayList;
+
 public class WebServer {
     public static void main(String[] args) {
         get("/hello", (req,res) -> {
@@ -14,23 +16,41 @@ public class WebServer {
         });
 
         SQLengine sqlEngine = new SQLengine();
-        sqlEngine.setConfig(new Schema());
+        sqlEngine.setConfig(new Schema(),"localhost","assetdb","serverlist");
+        sqlEngine.setUsernamePwd("steven","zima#9996zima#hong");
 
         //System.out.println("xxxx===");
         //System.out.println(sqlEngine.getRecord("xxxx"));
 
+        //Sample code for how to throw exception
         get("/throwexception",(req,res) -> {
             res.body("abc");
             throw new Exception("Testing Exception");
         });
 
+        //query
         get("/RecordID/:recordID",(req,res) ->{
 
             res.type("application/json");
             return sqlEngine.getRecord("xxxx").toJsonString();
         });
 
-        put("/ReplaceID/:recordID",(req,res) -> {
+        //queryRecordByKeys
+        get("/Record", (req,res) ->{
+           //Get json object from request body
+            //convert json string json object
+            //convert json object to list of properties
+            ArrayList<Property> properties = null;
+            ArrayList<Record> records = sqlEngine.queryRecordbyKeys(properties);
+            //convert records to json object
+            //convert json object to string;
+            return "json object string";
+        });
+
+
+
+        //update
+        put("/RecordID/:recordID",(req,res) -> {
             //Get json object from request body
             req.body();
             //Convert json object to Record
@@ -39,6 +59,8 @@ public class WebServer {
 
 
         });
+
+        //Create A new one
         post("/RecordID/:recordID",(req, res) ->{
             //Get json object from request body
             //Convert json object to Record
