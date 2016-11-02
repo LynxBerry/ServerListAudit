@@ -8,6 +8,7 @@ public class SchemaItem {
     private String typeName;
     private SchemaCheckAndInit init; //init the data
     private SchemaCheckAndInit check; //check the data only and does some conversion.
+    private boolean isKey = false;
 
     public SchemaItem(String keyName, String typeName, SchemaCheckAndInit init, SchemaCheckAndInit check){
         this.keyName = keyName;
@@ -15,6 +16,15 @@ public class SchemaItem {
         this.init = init;
         this.check = check;
 
+    }
+
+    public SchemaItem setKey(){
+        isKey = true;
+        return this;
+    }
+
+    public boolean isKey(){
+        return isKey;
     }
 
     public String getKeyName(){

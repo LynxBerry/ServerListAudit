@@ -1,11 +1,6 @@
 package com.lynxberry.serverlistaudit.library;
 import java.sql.*;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,7 +38,7 @@ public class SQLengine {
     }
     private Connection connect() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.jdbc.Driver");
-        Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/AssetDB?user=root&password=mail0806");
+        Connection connect = DriverManager.getConnection("jdbc:mysql://localhost/testdb?user=root&password=mail0806");
         return connect;
 
 
@@ -72,14 +67,38 @@ public class SQLengine {
 
     public void insertRecord(Record record) throws Exception {
         Connection connect = connect();
-        String sqlQuery = "Start Transaction;"
-                        + "select * from where keys are values for update;"
-                        + "insert statement;"
-                        + "commit;";
-                
-        PreparedStatement ps = connect.prepareStatement(sqlQuery);
-        ps.executeUpdate();
+        //Disabling autocommit to start transaction.
+        connect.setAutoCommit(false);
+        List<String> conditions;
+        List<String> columns;
+        List<String> values;
+        conditions = schema.getListSchema().stream().filter(SchemaItem::isKey).map(sc->sc.getKeyName()+"="+"'"+ record.getInnerPropertyByName(sc.getKeyName())+"'").collect(Collectors.toList());
+        columns = Record.getCommonSchema().getListSchema().stream().map(sc->sc.getKeyName()).collect(Collectors.toList());
+        columns.addAll(schema.getListSchema().stream().map(sc->sc.getKeyName()).collect(Collectors.toList()));
+        values = columns.stream().map(col->"'" + (String) record.getInnerPropertyByName(col) + "'").collect(Collectors.toList());
+        String sqlQuery = "select count(*) from " + tableName + " "
+                + "where " + String.join(" and ",conditions) + " for update;";
 
+
+        String sqlInsert = String.format("insert into %s (%s) values(%s);",tableName,String.join(",", columns), String.join(",", values));
+
+        System.out.println(sqlQuery);
+        System.out.println(sqlInsert);
+        /*
+        PreparedStatement ps = connect.prepareStatement(sqlQuery);
+        //ResultSet rs = ps.executeQuery();
+        int count = 1;
+        while (rs.next()) {
+            count = rs.getInt(1);
+        }
+
+        if (count == 0) {
+            PreparedStatement insertPS = connect.prepareStatement(sqlInsert);
+            //insertPS.executeUpdate();
+
+        }
+*/
+        connect.commit();
         connect.close();
 
     }
@@ -102,7 +121,7 @@ public class SQLengine {
     public ArrayList<Record> queryRecordbyKeys (ArrayList<Property> properties) throws Exception {
         Connection connect = connect();
         ArrayList<Record> records = new ArrayList<>();
-        List<String> conditions = properties.stream().map(p->p.getPropertyName() + " like " + "'%" + p.getPropertyValue().toString() + "%'").collect(Collectors.toList());
+        List<String> conditions = properties.stream().map(p->p.getPropertyName() + " like " + "'%" + p.getPropertyValue() + "%'").collect(Collectors.toList());
         conditions.add("IsValid = 'y'");//only fetch valid record;
         String sqlQuery =  "select *"
                           + String.format("from %s where ",tableName)

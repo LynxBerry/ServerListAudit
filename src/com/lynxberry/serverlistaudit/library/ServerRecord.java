@@ -28,7 +28,7 @@ public final class ServerRecord extends Record { // com.lynxberry.serverlistaudi
 
 
     @Override
-    public Object getPropertyByName(String propertyName) {
+    public Object getInnerPropertyByName(String propertyName) {
         //System.out.println("----");
         //System.out.println(propertyName);
         //System.out.println(hashProperties.get(propertyName));
@@ -38,7 +38,7 @@ public final class ServerRecord extends Record { // com.lynxberry.serverlistaudi
 
 
     @Override
-    public ArrayList<Property> getAllProperties() {
+    public ArrayList<Property> getInnerProperties() {
         ArrayList<Property> p = new ArrayList<>();
         Enumeration<String> e = hashProperties.keys();
         while(e.hasMoreElements()){

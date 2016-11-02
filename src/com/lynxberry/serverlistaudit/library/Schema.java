@@ -10,7 +10,7 @@ public class Schema {
     public Schema(){
         //hard coded for now
         listSchema = new ArrayList<>();
-        listSchema.add(new SchemaItem("ServerName","java.lang.String",o->o,o->o));
+        listSchema.add((new SchemaItem("ServerName","java.lang.String",o->o,o->o)).setKey());
         listSchema.add(new SchemaItem("ServiceName","java.lang.String",o->o,o->o));
         listSchema.add(new SchemaItem("SequenceName","java.lang.String",o->o,o->o));
         listSchema.add(new SchemaItem("ServerListName","java.lang.String",o->o,o->o));

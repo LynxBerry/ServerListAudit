@@ -42,7 +42,9 @@ public abstract class Record  {
 
     private boolean isInited = false;
 
-    public abstract Object getPropertyByName(String propertyName);
+    public abstract Object getInnerPropertyByName(String propertyName);
+
+    public Object getPropertyByName(String propertyName)
 
     public final String getRecordID() {
         return (String) commonProperties.get("RecordID");
@@ -183,7 +185,7 @@ public abstract class Record  {
         }
 
         //For inner properties
-        schema.getListSchema().forEach(sc->jsonBuilder.add(sc.getKeyName(),getPropertyByName(sc.getKeyName()).toString()));
+        schema.getListSchema().forEach(sc->jsonBuilder.add(sc.getKeyName(), getInnerPropertyByName(sc.getKeyName()).toString()));
 
         return jsonBuilder.build().toString();
     }
@@ -195,5 +197,6 @@ public abstract class Record  {
 
     }
 
-    public abstract ArrayList<Property> getAllProperties();
+    public abstract ArrayList<Property> getInnerProperties();
+
 }

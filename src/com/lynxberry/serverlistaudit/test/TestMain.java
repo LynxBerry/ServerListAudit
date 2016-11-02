@@ -37,10 +37,12 @@ public class TestMain {
         sqlEngine.setConfig(new Schema());
 
         System.out.println("xxxx===");
-        System.out.println(sqlEngine.getRecord("xxxx"));
+        //System.out.println(sqlEngine.getRecord("xxxx"));
         ArrayList<Property> props = new ArrayList<>();
         props.add(new Property<>("RecordID","xxxx"));
         System.out.println(sqlEngine.queryRecordbyKeys(props));
+
+        sqlEngine.insertRecord(record2);
         //System.out.println("yyy" + (new Date()).getClass().getCanonicalName());
         //System.out.println(("abc").getClass().getName());
 
