@@ -14,6 +14,9 @@ public class TestMain {
         Property prptServiceBelonging = new Property<String>("ServiceName", "BST");
         Property prptNumber = new Property<String>("SequenceName", "FE_Patch");
         Property prptServerListName = new Property<String>("ServerListName", "CP-1");
+
+
+
         System.out.println(prptServerName);
         System.out.println(prptServiceBelonging);
         System.out.println(prptNumber);
@@ -47,5 +50,46 @@ public class TestMain {
         //System.out.println("yyy" + (new Date()).getClass().getCanonicalName());
         //System.out.println(("abc").getClass().getName());
 
+        insertLotsOfRecords();
+
+
+
+
+
     }
+
+    public static void insertLotsOfRecords() throws Exception{
+        SQLengine sqlEngine = new SQLengine();
+        sqlEngine.setConfig(new Schema(),"localhost","AssetDB","serverlist");
+        sqlEngine.setUsernamePwd("steven","zima#9996zima#hong");
+        ArrayList<Record> records = new ArrayList<>();
+        for(int i = 0 ; i <1000; i++){
+
+            Property<String> prptServerName = new Property<>("ServerName", "co1mpbiutloct" + i);
+            Property prptServiceBelonging = new Property<String>("ServiceName", "BST");
+            Property prptNumber = new Property<String>("SequenceName", "FE_Patch");
+            Property prptServerListName = new Property<String>("ServerListName", "CP-1");
+            ArrayList<Property> properties = new ArrayList<>();
+            properties.add(prptServerName);
+            properties.add(prptServiceBelonging);
+            properties.add(prptNumber);
+            properties.add(prptServerListName);
+
+            Record record = RecordBuilderFactory.createRecorderBuilder("").setSchema(new Schema()).setProperties(properties).build();
+            records.add(record);
+
+        }
+
+        records.parallelStream().forEach(rec -> {
+            try {
+                sqlEngine.insertRecord(rec);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+
+
+
 }
