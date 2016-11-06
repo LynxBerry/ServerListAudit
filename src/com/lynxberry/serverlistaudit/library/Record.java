@@ -183,6 +183,11 @@ public abstract class Record  {
     }
 
     public final String toJsonString(){
+
+        return toJsonObject().toString();
+    }
+
+    public JsonObject toJsonObject(){
         JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
 
         //For common properties
@@ -194,8 +199,7 @@ public abstract class Record  {
 
         //For inner properties
         schema.getListSchema().forEach(sc->jsonBuilder.add(sc.getKeyName(), getInnerPropertyByName(sc.getKeyName()).toString()));
-
-        return jsonBuilder.build().toString();
+        return jsonBuilder.build();
     }
 
 

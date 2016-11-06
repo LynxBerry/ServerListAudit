@@ -4,21 +4,18 @@
 import static spark.Spark.*;
 import com.lynxberry.serverlistaudit.library.*;
 
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import java.util.ArrayList;
 
 public class WebServer {
     public static void main(String[] args) {
-        get("/hello", (req,res) -> {
-            res.body("fox");
-            return res;
-            //return "Hello World";
-
-        });
 
         SQLengine sqlEngine = new SQLengine();
         sqlEngine.setConfig(new Schema(),"localhost","assetdb","serverlist");
         sqlEngine.setUsernamePwd("steven","zima#9996zima#hong");
 
+        staticFiles.location("/public");
         //System.out.println("xxxx===");
         //System.out.println(sqlEngine.getRecord("xxxx"));
 
@@ -32,7 +29,7 @@ public class WebServer {
         get("/RecordID/:recordID",(req,res) ->{
 
             res.type("application/json");
-            return sqlEngine.getRecord("xxxx").toJsonString();
+            return sqlEngine.getRecord(req.params(":recordID")).toJsonString();
         });
 
         //queryRecordByKeys
@@ -47,6 +44,18 @@ public class WebServer {
             return "json object string";
         });
 
+
+        get("/AllRecords", (req,res) -> {
+            res.type("application/json");
+            ArrayList<Record> records = sqlEngine.getAllRecords();
+            JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
+            for (Record rec:records){
+                jsonArrayBuilder.add(rec.toJsonObject());
+
+            }
+            return jsonArrayBuilder.build().toString();
+
+        });
 
 
         //update
@@ -70,13 +79,16 @@ public class WebServer {
 
         exception(Exception.class, (exception,req,res) -> {
             res.body("fool panda");
+            exception.printStackTrace();
             System.out.println("excep 1");
         });
+
+        /*
         exception(Exception.class, (exception,req,res) -> {
             res.body(res.body() + "fool panda2");
             System.out.println("excep 2");
         });
-
+*/
     }
 
 

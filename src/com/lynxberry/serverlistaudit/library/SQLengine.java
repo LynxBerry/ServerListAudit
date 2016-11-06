@@ -58,7 +58,6 @@ public class SQLengine {
         ResultSet resultSet = preparedStatement.executeQuery();
         resultSet.first();
 
-        //statement.executeUpdate("insert into serverlist ('col1','col2') values(\"xxxxqqqq\",\"dm2mpbiutloct034\",\"BST\",\"FEpatching\",\"CP-1\")");
 
 
         Record record = loadRecordFromRS(resultSet);
@@ -67,6 +66,29 @@ public class SQLengine {
 
         return record;
 
+
+    }
+
+    public ArrayList<Record> getAllRecords() throws Exception {
+        Connection connect = connect();
+
+        PreparedStatement preparedStatement = connect.prepareStatement("select * from serverlist where IsValid = 'y';");
+
+
+        ResultSet resultSet = preparedStatement.executeQuery();
+
+
+        ArrayList<Record> records = new ArrayList<>();
+
+        while(resultSet.next()){
+            records.add(loadRecordFromRS(resultSet));
+        }
+
+        //Record record = loadRecordFromRS(resultSet);
+
+        connect.close();
+
+        return records;
 
     }
 
